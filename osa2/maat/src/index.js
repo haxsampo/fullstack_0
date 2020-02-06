@@ -40,9 +40,8 @@ const Lands = ({countries}) => {
 }
 
 const ShowButt = ({showCountry, thisCountry}) => {
-    console.log(thisCountry)
     return(
-        <button onClick={() =>showCountry(thisCountry)}>
+        <button onClick={() => showCountry(thisCountry)}>
             show
         </button>
     )
@@ -90,10 +89,29 @@ const App = () => {
             })
     }, [])
 
-    const showCountry = ({arg}) => {
-        return(
-            console.log(arg)
-        )
+    const showCountry = (countryName) => {
+        setSuodatin(countryName)
+        
+    }
+
+    const weatherObject = (country) => {
+        const apiUrl = 'http://api.weatherstack.com/current'
+        const params = {
+            access_key: process.env.REACT_APP_API_KEY,
+            query: 'helsinki'
+        }
+        console.log(params.access_key)
+         
+        axios
+            .get(apiUrl, {params})
+            .then(response => {
+                const data = response.data;
+                console.log(data)
+            })
+        
+        
+
+        
     }
 
     let countriesToShow = countries.filter(country => country.name.toLowerCase().includes(suodatin.toLowerCase()) )
@@ -101,8 +119,8 @@ const App = () => {
     return (
         <div>
             <Field onUpdate={e => setSuodatin(e.target.value)} inputText='find countries' />
-            <LandsOrNo countriesToShow={countriesToShow} showCountry={showCountry} /> 
-            <ShowButt showCountry={showCountry} thisCountry={'ebin'}     />      
+            <LandsOrNo countriesToShow={countriesToShow} showCountry={showCountry} />   
+            <button onClick={weatherObject}>weather</button>        
         </div>
     )
 }

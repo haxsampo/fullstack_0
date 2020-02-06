@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import axios from 'axios'
+import addressService from './services/address'
 
 
 
@@ -36,9 +37,15 @@ const App = () => {
         if (persons.find(person => newName === person.name)) {
             alert(`${newName} ei kelpaa, haista vittu`);
         } else {
-            setPersons(persons.concat({ name: newName, number: newNumber }))
-            setNewName('')
-            setNewNumber('')
+            const uusiNimNro = {name: newName, number: newNumber}
+            // setPersons(persons.concat( uusiNimNro))
+            // setNewName('')
+            // setNewNumber('')
+            axios
+                .post('httP://localhost:3001/persons', uusiNimNro)
+                .then(response => {
+                    setPersons(persons.concat(uusiNimNro))
+                })
         }
     }
 
