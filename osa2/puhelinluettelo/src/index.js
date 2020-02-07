@@ -14,8 +14,9 @@ const Field = ({ onUpdate, value, inputText }) => (
     </div>
 )
 
-const NumberComp = ({ fields, addName }) => (
+const AddingField = ({ fields, addName }) => (
     <form onSubmit={addName}>
+        <h2>Lisää sällää</h2>
         {fields.map( f => <Field key={f.key} onUpdate={f.onUpdate} value={f.value} inputText={f.inputText} />)}
         <div>
             <button type="submit">add</button>
@@ -24,38 +25,55 @@ const NumberComp = ({ fields, addName }) => (
 
 )
 
+const DelButt = ({number, delFunction}) => {
+    return (
+    <button onClick={() => delFunction(number)}>
+        delete
+    </button>
+    )
+}
+
+const NumbersComp = ({contactsToShow, delFunction}) => (
+    <div>
+        <h2>Numbers</h2>
+        {contactsToShow.map(p => <div key={p.name}>
+             {p.name} {p.number}
+             <DelButt number={p.id} delFunction={delFunction}/>
+             </div>)}
+    </div>
+)
+
 const App = () => {
     const [persons, setPersons] = useState([
-        { name: 'Arto Hellas', number: '0700-123123' },
     ])
     const [newName, setNewName] = useState('')
     const [newNumber, setNewNumber] = useState('')
     const [suodatin, setSuodatin] = useState('')
 
+
+    //MMISSÄ VAIHEESSA TOI ID LISÄTÄÄN, VOIKO DELETENAPPI KÄYTTÄÄ HUOLETTA IDTÄ? NANI KOKEILE SILLEEN ETTÄ KÄYTTÄÄ, HUOLEHDI ONGELMISTA MYÖHEMMIN
     const addName = (event) => {
         event.preventDefault();
         if (persons.find(person => newName === person.name)) {
             alert(`${newName} ei kelpaa, haista vittu`);
         } else {
             const uusiNimNro = {name: newName, number: newNumber}
-            // setPersons(persons.concat( uusiNimNro))
-            // setNewName('')
-            // setNewNumber('')
-            axios
-                .post('httP://localhost:3001/persons', uusiNimNro)
-                .then(response => {
-                    setPersons(persons.concat(uusiNimNro))
+            addressService
+                .create(uusiNimNro)
+                .then(returnedAddress => {
+                    setPersons(persons.concat(returnedAddress))
+                    console.log(persons)
+                    setNewName('')
+                    setNewNumber('')
                 })
         }
     }
 
     useEffect(() => {
-        console.log('effect')
-        axios
-            .get('http://localhost:3001/persons')
-            .then(response => {
-                console.log('promise fulfilled')
-                setPersons(response.data)
+        addressService
+            .getAll()
+            .then(initialAddress => {
+                setPersons(initialAddress)
             })
     }, [])
 
@@ -74,6 +92,22 @@ const App = () => {
         }
     ]
 
+    const delFunction = (name) => {
+        if(window.confirm("Poistetaanko ", name,"?")) {
+            addressService
+                .delNum(name)
+                .then( ret => {
+                    addressService
+                        .getAll()
+                        .then(data => {
+                            setPersons(data)
+                        })
+                })
+        } else {
+            console.log("juuei mitään")
+        }       
+    }
+
     let contactsToShow;
     if (suodatin.length === 0) {
         contactsToShow = persons;
@@ -85,10 +119,8 @@ const App = () => {
         <div>
             <h2>Phonebook</h2>
             <Field onUpdate={e => setSuodatin(e.target.value)} inputText='filter shown with: '/>
-            <h2>Lisääppä tässä paskaa</h2>
-            <NumberComp fields={fields} addName={addName} />           
-            <h2>Numbers</h2>
-            {contactsToShow.map(p => <p key={p.name}> {p.name} {p.number} </p>)}
+            <AddingField fields={fields} addName={addName} />           
+            <NumbersComp contactsToShow={contactsToShow} delFunction={delFunction} />
         </div>
     )
 
